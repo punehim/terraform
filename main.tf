@@ -8,6 +8,7 @@ variable "avail_zone" {}
 variable "env_prefix" {}
 variable "my_ip" {}
 variable "instance_type" {}
+variable "public_key_location" {}
 
 resource "aws_vpc" "development-vpc" {
     cidr_block = var.vpc-cidr-block
@@ -109,6 +110,11 @@ data "aws_ami" "latest-amazon-linux-image" {
 
 output "aws_ami_id" {
     value = data.aws_ami.latest-amazon-linux-image.id
+}
+
+resource "aws_key_pair" "ssh-key" {
+    key_name = "terraform.pem"
+    public_key = "${file(var.public_key_location)}"
   
 }
 
@@ -121,7 +127,7 @@ resource "aws_instance" "myapp-server" {
     availability_zone = var.avail_zone
 
     associate_public_ip_address = true
-    key_name = "terraform.pem"
+    key_name = aws_key_pair.ssh-key.key_name
 
 
 
